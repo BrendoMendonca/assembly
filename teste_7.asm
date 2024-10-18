@@ -13,13 +13,25 @@ includelib \masm32\lib\msvcrt.lib
 
 
 .data
+
+    inputFileName db 50 dup(0)         ; Buffer para armazenar o nome do arquivo de entrada
+    outputFileName db 50 dup(0)        ; Buffer para armazenar o nome do arquivo de saída
+        
     ; Buffers para armazenar os nomes dos arquivos.
-    inputFileName db "sw.wav", 0  ; Nome do arquivo de entrada (exemplo: entrada.wav).
-    outputFileName db "saida21.wav", 0   ; Nome do arquivo de saída (exemplo: saida.wav).
+    ;inputFileName db "sw.wav", 0  ; Nome do arquivo de entrada (exemplo: entrada.wav).
+    ;outputFileName db "saida21.wav", 0   ; Nome do arquivo de saída (exemplo: saida.wav).
+
+    constReducaoStr db 4 dup(0)        ; Buffer para armazenar a constante de redução em formato de string
+    constReducao dw 0                  ; Variável para armazenar a constante de redução em formato numérico
     
     ; Mensagens para exibir em caso de sucesso ou erro.
     msgSuccess db "Copia do arquivo realizada com sucesso!", 0ah, 0
     msgError db "Erro ao abrir o arquivo.", 0ah, 0
+
+    msgInputFileName db "Digite o nome do arquivo de entrada (.WAV):", 0 ; Mensagem de entrada
+    msgOutputFileName db "Digite o nome do arquivo de saída (.WAV):", 0  ; Mensagem de saída
+    msgConstReducao db "Digite a constante de redução (1 a 10):", 0      ; Mensagem para constante de redução
+
 
     ; Buffer para armazenar os 44 bytes do cabeçalho e blocos de 16 bytes.
     header db 44 dup(0)
@@ -34,13 +46,15 @@ includelib \masm32\lib\msvcrt.lib
     ; Variável para armazenar o handle de saída do console.
     outputHandle dd 0
 
-    reducao WORD 10
+    reducao WORD 1
 
 .code
 start:
     ; Obter o handle para a saída padrão (console).
     invoke GetStdHandle, STD_OUTPUT_HANDLE
     mov outputHandle, eax
+
+    invoke WriteConsole, outputHandle, addr msgInputFileName, sizeof msgInputFileName -1, addr writtenBytes, 0
 
     ; Abrir o arquivo de entrada para leitura.
     invoke CreateFile, addr inputFileName, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL
